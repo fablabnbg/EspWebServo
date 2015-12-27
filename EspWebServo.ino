@@ -7,6 +7,8 @@
  * FIXME: the upload code does not yet work as advertised:
  *   To upload through terminal you can use: curl -F "image=@firmware.bin" esp8266-webupdate.local/update
  *   The upload slows down, and comes to a halt at ca 98% -- never finishes.
+ * 
+ * CAUTION: call 'make' before compiling this.
  */
 
 extern "C" {
@@ -136,6 +138,7 @@ void handleRoot() {
   httpServer.send ( 200, "text/html",
 "<html>\
   <head>\
+    <meta charset=\"utf-8\" />\
     <title>" AP_DEFAULT_SSID "</title>\
     <style>\
       body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }\
@@ -149,6 +152,8 @@ void handleRoot() {
     <br/>\
     <p><a href=\"/stats\">Statistics</a> (<a href=\"/stats.json\">json</a>)</p>\
     <p><a href=\"/admin\">Network Administration</a>\
+    <p><br/>Follow us on <a href=\"http://github.com/fablabnbg/EspWebServo\">github</a>!\
+    <p><small>(C) 2015 Jürgen Weigert &lt;<a href=\"mailto:juewei@fabfolk.com\">juewei@fabfolk.com</a>&gt;</small>\
   </body>\
 </html>");
 }
@@ -188,7 +193,8 @@ void handleServo() {
     Serial.printf("servo id=%s set pos=%d\n", servo_id.c_str(), pos);
     snprintf(temp, 100, "set id=%s pos=%d", servo_id.c_str(), pos);
   } else {
-    pos=myservo.read();
+    pos = myservo.read();
+    if (pos > 0) pos += 1;   // FIXME: without +1, all values are off by one. why?
     Serial.printf("servo id=%d query pos=%d\n", servo_id.c_str(), pos);
     snprintf(temp, 100, "%d", pos);
   }
@@ -267,6 +273,7 @@ void handleStats() {
 "<html>\
   <head>\
     <meta http-equiv='refresh' content='5'/>\
+    <meta charset='utf-8' />\
     <title>%s</title>\
     <style>\
       body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }\

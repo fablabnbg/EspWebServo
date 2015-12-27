@@ -1,11 +1,9 @@
 <!doctype html>
 <html>
-<head>
-<meta charset="utf-8">
-</head>
+<head><meta charset="utf-8" /></head>
 <body>
 <input id="servo1" type ="range" onkeyup="sendValue('servo1', 'servo1_label')" onchange="sendValue('servo1','servo1_label')" min ="0" max="180" step ="5" value ="90"/>
-<input id="servo1_label" onchange="sendValue('servo1_label', 'servo1')" type="text" size="2"></input>
+<input id="servo1_label" onchange="sendValue('servo1_label', 'servo1')" type="text" size="3"></input>
 <input id="servo1_left"  onclick="changeValues(0, 0, 0,   'servo1_label', 'servo1')" type="button" value="|<"></input>
 <input id="servo1_minus" onclick="changeValues(0,-5,180,  'servo1_label', 'servo1')" type="button" value="<"></input>
 <input id="servo1_cent"  onclick="changeValues(90,90,90,  'servo1_label', 'servo1')" type="button" value="="></input>
