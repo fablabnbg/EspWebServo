@@ -93,8 +93,8 @@ void setup(void){
   httpServer.on("/servo", handleServo);
   httpServer.on("/cfg", handleCfg);
   httpServer.on("/stats", handleStats);
-  httpServer.on("/admin",  HTTP_GET, [](){ httpServer.send(200, "text/html", (char *)admin_html); });
   httpServer.on("/slider", HTTP_GET, [](){ httpServer.send(200, "text/html", (char *)slider_html); });
+  httpServer.on("/admin",  HTTP_GET, [](){ httpServer.send(200, "text/html", (char *)admin_html); });
   // get heap status, analog input value and all GPIO statuses in one json call
   httpServer.on("/stats.json", HTTP_GET, [](){
     String json = "{";
