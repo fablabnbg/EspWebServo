@@ -39,6 +39,7 @@ const char* host = "esp8266-webupdate";
 const char* ssid = STA_DEFAULT_SSID;
 const char* password = STA_DEFAULT_PASSWORD;
 
+String ap_ssid(AP_DEFAULT_SSID);
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
 Servo myservo;
@@ -49,13 +50,14 @@ void handleNotFound();
 void handleRoot();
 void handleTestSVG();
 void handleSet();
+void handleStats();
 
 void setup(void){
 
   Serial.begin(115200);
   Serial.print("\nFlash: ");
   Serial.println(flashSizeStr());
-  
+  Serial.println("Build Date: " __DATE__ " " __TIME__);
   WiFi.mode(WIFI_AP_STA);
   WiFi.begin(ssid, password);
 
@@ -64,6 +66,12 @@ void setup(void){
     Serial.println("WiFi failed, retrying.");
   }
 
+  uint8_t mac[6];
+  char macstr3[10];
+  wifi_get_macaddr(SOFTAP_IF, mac);
+  sprintf(macstr3, "-%02X%02X%02X", mac[3], mac[4], mac[5]);
+  ap_ssid += String(macstr3);
+  
   start_sntp();
   
   MDNS.begin(host);
@@ -72,9 +80,9 @@ void setup(void){
   httpServer.on("/", handleRoot);
   httpServer.on("/test.svg", handleTestSVG);
   httpServer.on("/set", handleSet);
-  
+  httpServer.on("/stats", handleStats);
   // get heap status, analog input value and all GPIO statuses in one json call
-  httpServer.on("/status", HTTP_GET, [](){
+  httpServer.on("/stats.json", HTTP_GET, [](){
     String json = "{";
     json += "\"heap\":"+String(ESP.getFreeHeap());
     json += ", \"analog\":"+String(analogRead(A0));
@@ -173,29 +181,56 @@ void handleTestSVG() {
 }
 
 void handleRoot() {
-  char temp[400];
-  int sec = millis() / 1000;
-  int min = sec / 60;
-  int hr = min / 60;
-
-  snprintf ( temp, 400,
-
+  httpServer.send ( 200, "text/html",
 "<html>\
   <head>\
-    <meta http-equiv='refresh' content='5'/>\
-    <title>ESP8266 Demo</title>\
+    <title>" AP_DEFAULT_SSID "</title>\
     <style>\
       body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }\
     </style>\
   </head>\
   <body>\
-    <h1>Hello from ESP8266!</h1>\
+    <p><a href=\"/stats\">Statistics</a> (<a href=\"/stats.json\">json</a>)</p>\
+    <p><a href=\"/set?name=servo&pos=0\">Servo left</a></p>\
+    <p><a href=\"/set?name=servo&pos=90\">Servo center</a></p>\
+    <p><a href=\"/set?name=servo&pos=180\">Servo right</a></p>\
+  </body>\
+</html>");
+}
+
+void handleStats() {
+  char temp[600];
+  int sec = millis() / 1000;
+  int min = sec / 60;
+  int hr = min / 60;
+  
+      
+  snprintf ( temp, 600,
+
+"<html>\
+  <head>\
+    <meta http-equiv='refresh' content='5'/>\
+    <title>%s</title>\
+    <style>\
+      body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }\
+    </style>\
+  </head>\
+  <body>\
+    <h1>Hello from %s!</h1>\
     <p>Uptime: %02d:%02d:%02d</p>\
+    <p>NTP Time: %s</p>\
+    <p>IP-Address: <b>%s</b> at SSID <b>%s</b></p>\
+    <p>ADC: %d</p>\
+    <p>GPIO: 0x%05x</p>\
     <img src=\"/test.svg\" />\
   </body>\
 </html>",
-
-    hr, min % 60, sec % 60
+    ap_ssid.c_str(), ap_ssid.c_str(),
+    hr, min % 60, sec % 60,
+    sntp_get_real_time(sntp_get_current_timestamp()),
+    WiFi.localIP().toString().c_str(), ssid,
+    analogRead(A0),
+    (uint32_t)(((GPI | GPO) & 0xFFFF) | ((GP16I & 0x01) << 16))
   );
   httpServer.send ( 200, "text/html", temp );
 }
