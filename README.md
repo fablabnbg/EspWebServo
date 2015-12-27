@@ -12,9 +12,15 @@ When the station connects to an existing network, it tries to reach the time ser
 
 The servo can be moved by accessing e.g.
 
-* http://192.168.4.1/set?name=servo&pos=0
-* http://192.168.4.1/set?name=servo&pos=90
-* http://192.168.4.1/set?name=servo&pos=180
+* http://192.168.4.1/servo?id=1&pos=0
+* http://192.168.4.1/servo?id=1&pos=90
+* http://192.168.4.1/servo?id=1&pos=180
 
+The network for the station can be reconfigured with e.g.
+
+* http://192.168.4.1/cfg?sta_ssid=FabLab_NBG?sta_pass=********
+
+The web interface also has a nice javascript slider to control the servo, and an admin form to control the configuration.
+The web interface is identical on both access-point and station. You can choose any.
 
 Happy hacking!
