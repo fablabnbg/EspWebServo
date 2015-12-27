@@ -1,10 +1,19 @@
 /*
-  To upload through terminal you can use: curl -F "image=@firmware.bin" esp8266-webupdate.local/update
-*/
+ * EspWebServo -- a true Internet Of Things device. esp8266 drives one (or more) servo(s) controlled over TCP.
+ * 
+ * 2015-12-26 (c) juewei@fabfolk.com
+ * Distribute under GPL-2.0 or ask.
+ * 
+ * FIXME: the upload code does not yet work as advertised:
+ *   To upload through terminal you can use: curl -F "image=@firmware.bin" esp8266-webupdate.local/update
+ *   The upload slows down, and comes to a halt at ca 98% -- never finishes.
+ */
 
 extern "C" {
-#include "user_interface.h"
-#include "sntp.h"       // we want to know the time....
+#include <user_interface.h>
+#include <sntp.h>       // we want to know the time....
+#include "slider.html.h"    // const char[] slider_html
+#include "admin.html.h"     // const char[] admin_html
 }
 
 #include <ESP8266WiFi.h>
@@ -39,7 +48,7 @@ const char* host = "esp8266-webupdate";
 const char* ssid = STA_DEFAULT_SSID;
 const char* password = STA_DEFAULT_PASSWORD;
 
-String ap_ssid(AP_DEFAULT_SSID);
+String ap_ssid = AP_DEFAULT_SSID;
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
 Servo myservo;
@@ -49,8 +58,9 @@ void start_sntp();
 void handleNotFound();
 void handleRoot();
 void handleTestSVG();
-void handleSet();
+void handleServo();
 void handleStats();
+void handleCfg();
 
 void setup(void){
 
@@ -71,6 +81,7 @@ void setup(void){
   wifi_get_macaddr(SOFTAP_IF, mac);
   sprintf(macstr3, "-%02X%02X%02X", mac[3], mac[4], mac[5]);
   ap_ssid += String(macstr3);
+  WiFi.softAP(ap_ssid.c_str());
   
   start_sntp();
   
@@ -79,8 +90,11 @@ void setup(void){
   httpUpdater.setup(&httpServer);
   httpServer.on("/", handleRoot);
   httpServer.on("/test.svg", handleTestSVG);
-  httpServer.on("/set", handleSet);
+  httpServer.on("/servo", handleServo);
+  httpServer.on("/cfg", handleCfg);
   httpServer.on("/stats", handleStats);
+  httpServer.on("/admin",  HTTP_GET, [](){ httpServer.send(200, "text/html", (char *)admin_html); });
+  httpServer.on("/slider", HTTP_GET, [](){ httpServer.send(200, "text/html", (char *)slider_html); });
   // get heap status, analog input value and all GPIO statuses in one json call
   httpServer.on("/stats.json", HTTP_GET, [](){
     String json = "{";
@@ -118,6 +132,27 @@ void loop(void){
     }
 }
 
+void handleRoot() {
+  httpServer.send ( 200, "text/html",
+"<html>\
+  <head>\
+    <title>" AP_DEFAULT_SSID "</title>\
+    <style>\
+      body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }\
+    </style>\
+  </head>\
+  <body>\
+    <p><a href=\"/slider\">Servo Control</a></p>\
+    <p>&nbsp;<a href=\"/servo?id=1&pos=0\">Servo Left</a></p>\
+    <p>&nbsp;<a href=\"/servo?id=1&pos=90\">Servo Center</a></p>\
+    <p>&nbsp;<a href=\"/servo?id=1&pos=180\">Servo Right</a></p>\
+    <br/>\
+    <p><a href=\"/stats\">Statistics</a> (<a href=\"/stats.json\">json</a>)</p>\
+    <p><a href=\"/admin\">Network Administration</a>\
+  </body>\
+</html>");
+}
+
 char *flashSizeStr() {
   enum flash_size_map f = system_get_flash_size_map();
   switch (f) {
@@ -138,23 +173,62 @@ void start_sntp() {
   sntp_init();
 }
 
-void handleSet() {
+void handleServo() {
   char temp[100];
 
-  if (!httpServer.hasArg("name")) { httpServer.send(500, "text/plain", "missing parameter: name"); }
-  String name = httpServer.arg("name");
+  String servo_id = "1";
+  if (httpServer.hasArg("id")) { servo_id = httpServer.arg("id"); }
   
   int pos = -1;
   if (httpServer.hasArg("pos")) pos = httpServer.arg("pos").toInt();
 
-  if (name.startsWith("servo") && pos >= 0) {
-    if (pos > 200) pos = 200;
+  if (pos >= 0) {
+    if (pos > 180) pos = 180;
     myservo.write(pos);
-    Serial.printf("set name=%s pos=%d\n", name.c_str(), pos);
+    Serial.printf("servo id=%s set pos=%d\n", servo_id.c_str(), pos);
+    snprintf(temp, 100, "set id=%s pos=%d", servo_id.c_str(), pos);
+  } else {
+    pos=myservo.read();
+    Serial.printf("servo id=%d query pos=%d\n", servo_id.c_str(), pos);
+    snprintf(temp, 100, "%d", pos);
+  }
+  httpServer.send ( 200, "text/html", temp);
+}
+
+void handleCfg() {
+  char temp[100];
+
+  String net_if = "STA";
+  if (httpServer.hasArg("if")) { net_if = httpServer.arg("if"); }
+
+  struct station_config sta_conf;
+  struct softap_config ap_conf;
+  wifi_station_get_config(&sta_conf);
+  wifi_softap_get_config(&ap_conf);
+    
+  String sta_ssid = reinterpret_cast<char*>(sta_conf.ssid);
+  String sta_pass = reinterpret_cast<char*>(sta_conf.password);
+  String ap_ssid = reinterpret_cast<char*>(ap_conf.ssid);
+  String ap_pass = reinterpret_cast<char*>(ap_conf.password);
+  
+  if (httpServer.hasArg("sta_pass") && !httpServer.arg("sta_pass").equals("****")) sta_pass = httpServer.arg("sta_pass");
+  if (httpServer.hasArg("sta_ssid")) {
+    sta_ssid = httpServer.arg("sta_ssid");
+    WiFi.begin(sta_ssid.c_str(), sta_pass.c_str());
+    Serial.println("STA reconfigured");
+  }
+  if (httpServer.hasArg("ap_pass") && !httpServer.arg("ap_pass").equals("****")) ap_pass = httpServer.arg("ap_pass");
+  if (httpServer.hasArg("ap_ssid")) {
+    WiFi.softAP(ap_ssid.c_str(), ap_pass.c_str());
+    Serial.println("AP reconfigured");
   }
   
-  snprintf(temp, 100, "<html><body>set name=%s pos=%d</body></html>", name.c_str(), pos);
-  httpServer.send ( 200, "text/html", temp);
+  char json[300];
+  // FIXME: how do we construct json with proper escaping?
+  snprintf(json, 300, "{\"sta\":{\"ssid\":\"%s\",\"pass\":\"%s\"},\"ap\":{\"ssid\":\"%s\",\"pass\":\"%s\"}}",
+       sta_ssid.c_str(), "****", ap_ssid.c_str(), "****");
+  httpServer.send(200, "text/json", json);
+  Serial.println(json);
 }
 
 void handleTestSVG() {
@@ -180,23 +254,6 @@ void handleTestSVG() {
   httpServer.send ( 200, "image/svg+xml", out);
 }
 
-void handleRoot() {
-  httpServer.send ( 200, "text/html",
-"<html>\
-  <head>\
-    <title>" AP_DEFAULT_SSID "</title>\
-    <style>\
-      body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }\
-    </style>\
-  </head>\
-  <body>\
-    <p><a href=\"/stats\">Statistics</a> (<a href=\"/stats.json\">json</a>)</p>\
-    <p><a href=\"/set?name=servo&pos=0\">Servo left</a></p>\
-    <p><a href=\"/set?name=servo&pos=90\">Servo center</a></p>\
-    <p><a href=\"/set?name=servo&pos=180\">Servo right</a></p>\
-  </body>\
-</html>");
-}
 
 void handleStats() {
   char temp[600];

@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+</head>
+<body>
+<H1>Station Configuration</H1>
+<form action="/cfg" method="GET">
+  WLAN SSID to connect:      <input id="sta_ssid" type="text" value=""><br>
+  WLAN Password (if needed): <input id="sta_pass" type="text" value=""><br>
+  <br/><br/>
+  <input type="submit" value="Submit">
+</form>
+
+<script> 
+    function FillForm() {
+        // query server and set values
+        var sta_s = document.getElementById('sta_ssid');
+        var sta_p = document.getElementById('sta_pass');
+	var ajax = new XMLHttpRequest();
+	ajax.onreadystatechange = function() {
+	  if (ajax.readyState == 4 && ajax.status == 200) {
+	    cfg = JSON.parse(ajax.responseText);
+	    s.value = cfg.sta.ssid;
+	    p.value = cfg.sta.pass;
+	  }
+	};
+	ajax.open("GET", "/cfg/?json=1", true); ajax.send();
+    }
+    window.onload = function() { FillForm(); }
+</script>
+</body>
+</html>
