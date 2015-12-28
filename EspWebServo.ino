@@ -9,6 +9,13 @@
  *   The upload slows down, and comes to a halt at ca 98% -- never finishes.
  * 
  * CAUTION: call 'make' before compiling this.
+ * Added a roboRemo server. Cannot use stock EthernetServer. Must use ESP8266Wifi, WifiServer, ...
+
+ * Syntax of commands for the remoRobo interface:
+ *   servo 1 pos 0
+ *   servo 1 pos 180
+ *   servo 1 speed 255
+ *   servo 1 speed 0
  */
 
 extern "C" {
@@ -19,7 +26,6 @@ extern "C" {
 }
 
 #include <ESP8266WiFi.h>
-#include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 #include <ESP8266HTTPUpdateServer.h>
@@ -42,18 +48,30 @@ extern "C" {
 #ifndef UTC_OFFSET
 # define UTC_OFFSET +1           // Timezone in Germany
 #endif
-#ifndef SERVO_GPIO
-# define SERVO_GPIO 2
+#ifndef SERVO_GPIOS
+// # define SERVO_GPIOS 2, 13, 4, 5
+# define SERVO_GPIOS 2
 #endif
+#ifndef SERVO_SPEED
+# define SERVO_SPEED 250
+#endif
+#ifndef ROBO_PORT
+# define ROBO_PORT 9876
+#endif
+
+#define MAX_SERVO_ID 4
 
 const char* host = "esp8266-webupdate";
 const char* ssid = STA_DEFAULT_SSID;
 const char* password = STA_DEFAULT_PASSWORD;
 
 String ap_ssid = AP_DEFAULT_SSID;
+WiFiServer roboServer(ROBO_PORT);      // RoboRemoFree Android app connects here
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
-Servo myservo;
+Servo myservo[MAX_SERVO_ID];
+uint8_t servoSpeed[MAX_SERVO_ID];               // 255=fastest, else 255-X msec delay per single degree 
+uint8_t servoGPIO[MAX_SERVO_ID] = { SERVO_GPIOS };  // GPIO 3 never seen, but 13 often is.
 
 char *flashSizeStr();
 void start_sntp();
@@ -63,6 +81,7 @@ void handleTestSVG();
 void handleServo();
 void handleStats();
 void handleCfg();
+void roboServer_handleClient();
 
 void setup(void){
 
@@ -110,10 +129,19 @@ void setup(void){
 
   httpServer.onNotFound( handleNotFound);
   httpServer.begin();
-
+  Serial.println("HTTP server port: 80");
+  
+  roboServer.begin();  // do not use stock EthernetServer, this crashes!
+  roboServer.setNoDelay(true);
+  Serial.printf("Robo server port: %d\n", ROBO_PORT);
+  
   MDNS.addService("http", "tcp", 80);
-  Serial.printf("HTTPUpdateServer ready! Open http://%s.local/update in your browser\n", host);
-  myservo.attach(SERVO_GPIO);
+  // Serial.printf("HTTPUpdateServer ready! Open http://%s.local/update in your browser\n", host);
+  for (uint8_t i = 1; i <= MAX_SERVO_ID; i++) {
+    if (servoGPIO[i-1])
+      myservo[i-1].attach(servoGPIO[i-1]);
+    servoSpeed[i-1] = SERVO_SPEED;
+  }
 }
 
 int last_millis = 0;
@@ -121,6 +149,8 @@ int last_millis = 0;
 void loop(void){
   int m = millis();
   httpServer.handleClient();
+  delay(1);
+  roboServer_handleClient();
   delay(1);
 
   if (m < last_millis || m > (last_millis+5000))
@@ -178,24 +208,61 @@ void start_sntp() {
   sntp_init();
 }
 
+void servoSpeedSet(uint8_t id, uint8_t speed) {
+  if (id < 1) id = 1; if (id > MAX_SERVO_ID) id = MAX_SERVO_ID;
+  servoSpeed[id-1] = speed;  
+}
+
+uint8_t servoPos(uint8_t id) {
+  if (id < 1) id = 1; if (id > MAX_SERVO_ID) id = MAX_SERVO_ID;
+  return myservo[id-1].read();  
+}
+
+void servoMove(uint8_t id, uint8_t pos) {
+  if (id < 1) id = 1; if (id > MAX_SERVO_ID) id = MAX_SERVO_ID;
+  if (pos > 180) pos = 180;
+  if (servoSpeed[id-1] < 255) {
+    int p = servoPos(id);
+    Serial.printf("moveing servo %d from %d to %d speed %d\n", id, p, pos, servoSpeed[id-1]);
+    if (p < pos) {
+      for (; p < pos; p += 1) {
+        myservo[id-1].write(p);
+        delay(255-servoSpeed[id-1]);
+      }
+    } else {
+      for (; p > pos; p -= 1) {
+        myservo[id-1].write(p);
+        delay(255-servoSpeed[id-1]);      
+      }
+    }
+  }
+  Serial.printf("moved servo %d to %d\n", id, pos);
+  myservo[id-1].write(pos);
+}
+
 void handleServo() {
   char temp[100];
 
   String servo_id = "1";
   if (httpServer.hasArg("id")) { servo_id = httpServer.arg("id"); }
+  int id = servo_id.toInt();
   
+  int speed = -1;
+  if (httpServer.hasArg("speed")) speed = httpServer.arg("speed").toInt();
+
   int pos = -1;
   if (httpServer.hasArg("pos")) pos = httpServer.arg("pos").toInt();
 
+  if (speed >= 0) servoSpeedSet(id, speed);
+  
   if (pos >= 0) {
     if (pos > 180) pos = 180;
-    myservo.write(pos);
-    Serial.printf("servo id=%s set pos=%d\n", servo_id.c_str(), pos);
-    snprintf(temp, 100, "set id=%s pos=%d", servo_id.c_str(), pos);
+    servoMove(id, pos);
+    snprintf(temp, 100, "set id=%d pos=%d", id, pos);
   } else {
-    pos = myservo.read();
+    pos = servoPos(id);
     if (pos > 0) pos += 1;   // FIXME: without +1, all values are off by one. why?
-    Serial.printf("servo id=%d query pos=%d\n", servo_id.c_str(), pos);
+    Serial.printf("servo id=%d query pos=%d\n", id, pos);
     snprintf(temp, 100, "%d", pos);
   }
   httpServer.send ( 200, "text/html", temp);
@@ -315,3 +382,103 @@ void handleNotFound() {
 
   httpServer.send ( 404, "text/plain", message );
 }
+
+void roboCmd(char *buf) {
+  while (*buf == '\r' || *buf == '\n' || *buf == '\t' || *buf == ' ') buf++;
+  Serial.printf("roboCmd: '%s'\n", buf);
+  if (!strncmp(buf, "servo", 5)) {
+    buf += 5; while (*buf == ' ' || *buf == '\t') buf++;
+    int servo_id = atoi(buf);
+    if (servo_id < 1) servo_id = 1;
+    if (servo_id > MAX_SERVO_ID) servo_id = MAX_SERVO_ID;
+    while (*buf != ' ' && *buf != '\t' && *buf != '\0') buf++;
+    while (*buf == ' ' || *buf == '\t') buf++;
+    if (!strncmp(buf, "speed", 5)) {
+      buf += 5; while (*buf == ' ' || *buf == '\t') buf++;
+      servoSpeedSet(servo_id, atoi(buf));
+    } else if (!strncmp(buf, "pos", 3)) {
+      buf += 3; while (*buf == ' ' || *buf == '\t') buf++;
+      servoMove(servo_id, atoi(buf));
+    } else {
+      Serial.printf("roboCmd: unknown servo cmd: '%s'\n", buf);
+    }
+  } else {
+    Serial.printf("roboCmd: unknown command '%s'\n", buf);
+  }
+}
+
+#define ROBO_CLIENTS 2
+#define ROBO_CLIENT_BUF_SZ 200
+WiFiClient roboClient[ROBO_CLIENTS];
+unsigned char  roboClientBuf[ROBO_CLIENTS][ROBO_CLIENT_BUF_SZ];
+int            roboClientBufLen[ROBO_CLIENTS];
+
+void roboServer_handleClient() {
+  WiFiClient newClient = roboServer.available();
+  uint8_t i;
+  
+  if (newClient) {
+    boolean slotNeeded = true;
+    Serial.println("roboServer accept");
+    for (i = 0; i < ROBO_CLIENTS; i++) {
+      if ( !roboClient[i] || !roboClient[i].connected() ) {
+        if (roboClient[i]) {
+          roboClient[i].stop();
+          Serial.printf("Bye robo client %d\n", i);
+          delay(100);
+        }
+        roboClient[i] = newClient;
+        roboClientBufLen[i] = 0;
+        Serial.printf("new robo client %d\n", i);
+        slotNeeded = false;
+        break;
+      }
+    }
+    if (slotNeeded) {   // no slot available, reject
+      newClient.write("500 too many connections\n", 25);
+      delay(200); // maybe needed to send?
+      newClient.stop();
+    }
+  }
+
+  // check clients for data
+  for (i = 0; i < ROBO_CLIENTS; i++) {  
+    if (roboClient[i] && roboClient[i].connected() && roboClient[i].available() ) {
+      unsigned char *buf = roboClientBuf[i];
+      int len = roboClientBufLen[i];
+      // Serial.printf("robo %d available\n", i);
+      if (len >= ROBO_CLIENT_BUF_SZ) {
+        Serial.printf("robo %d overflow\n", i);
+        len = 0;
+        roboClientBufLen[i] = 0;
+        // CAUTION: next command chunk is most likely a partial command
+      }
+      int n = roboClient[i].read(buf+len, ROBO_CLIENT_BUF_SZ-len);
+      if (n <= 0) continue;
+      len += n;
+      // Serial.printf("robo %d read %d bytes -> buffer %d bytes\n", i, n, len);
+      for (int x = 0; x < len; x++) {
+        if (buf[x] == '\n' || buf[x] == '\r' || buf[x] == '\0') {
+          // process, shift, rescan
+          buf[x] = '\0';
+          roboCmd((char *)buf);
+          delay(1);   // maybe schedule?
+          memmove(buf, buf+x+1, len-x-1);
+          len = len-x-1;
+          x = 0;      // we continue the for loop, adter shifting, to see if there are more commands.
+          roboClientBufLen[i] = len;
+          // Serial.printf("robo(%d) remaining %d bytes\n", i, len);
+        }
+      }
+    }
+  }
+
+  for (i = 0; i < ROBO_CLIENTS; i++) {
+    if (roboClient[i] && !roboClient[i].connected()) {
+      // stop() invalidates client, now comparison will evaluate false.
+      roboClient[i].stop();
+      Serial.printf("bye robo client %d\n", i);
+    }
+  }
+}
+
