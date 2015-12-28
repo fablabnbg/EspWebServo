@@ -16,6 +16,13 @@ The servo can be moved by accessing e.g.
 * http://192.168.4.1/servo?id=1&pos=90
 * http://192.168.4.1/servo?id=1&pos=180
 
+A simple TCP protocol for use with e.g. RoboRemo is also supported:
+
+ *   servo 1 pos 0
+ *   servo 1 pos 180
+ *   servo 1 speed 255
+ *   servo 1 speed 0
+
 The network for the station can be reconfigured with e.g.
 
 * http://192.168.4.1/cfg?sta_ssid=FabLab_NBG?sta_pass=****
