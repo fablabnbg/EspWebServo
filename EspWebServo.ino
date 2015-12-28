@@ -10,7 +10,7 @@
  * 
  * CAUTION: call 'make' before compiling this.
  * Added a roboRemo server. Cannot use stock EthernetServer. Must use ESP8266Wifi, WifiServer, ...
- *
+
  * Syntax of commands for the remoRobo interface:
  *   servo 1 pos 0
  *   servo 1 pos 180
@@ -284,16 +284,26 @@ void handleCfg() {
   String ap_ssid = reinterpret_cast<char*>(ap_conf.ssid);
   String ap_pass = reinterpret_cast<char*>(ap_conf.password);
   
-  if (httpServer.hasArg("sta_pass") && !httpServer.arg("sta_pass").equals("****")) sta_pass = httpServer.arg("sta_pass");
+  if (httpServer.hasArg("sta_pass") && !httpServer.arg("sta_pass").equals("****")) {
+    sta_pass = httpServer.arg("sta_pass");
+    sta_pass.replace('+', ' ');
+  }
   if (httpServer.hasArg("sta_ssid")) {
     sta_ssid = httpServer.arg("sta_ssid");
-    WiFi.begin(sta_ssid.c_str(), sta_pass.c_str());
-    Serial.println("STA reconfigured");
+    // FIXME: need proper CGI unescape here!
+    sta_ssid.replace('+', ' ');
+    int r = WiFi.begin(sta_ssid.c_str(), sta_pass.c_str());
+    Serial.printf("STA reconfigured ssid='%s' pass='%s' status=%d\n", sta_ssid.c_str(), sta_pass.c_str(), r);
   }
-  if (httpServer.hasArg("ap_pass") && !httpServer.arg("ap_pass").equals("****")) ap_pass = httpServer.arg("ap_pass");
+  if (httpServer.hasArg("ap_pass") && !httpServer.arg("ap_pass").equals("****")) {
+    ap_pass = httpServer.arg("ap_pass");
+    ap_pass.replace('+', ' ');
+  }
   if (httpServer.hasArg("ap_ssid")) {
+    ap_ssid = httpServer.arg("ap_ssid");
+    ap_ssid.replace('+', ' ');
     WiFi.softAP(ap_ssid.c_str(), ap_pass.c_str());
-    Serial.println("AP reconfigured");
+    Serial.printf("AP reconfigured ssid='%s' pass='%s'\n", ap_ssid.c_str(), ap_pass.c_str());
   }
   
   char json[300];
