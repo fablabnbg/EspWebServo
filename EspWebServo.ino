@@ -10,7 +10,9 @@
  * 
  * CAUTION: call 'make' before compiling this.
  * Added a roboRemo server. Cannot use stock EthernetServer. Must use ESP8266Wifi, WifiServer, ...
-
+ *
+ * FIXME: use httpdUrlDecode() or similar instead of String.replace('+', ' ');
+ *
  * Syntax of commands for the remoRobo interface:
  *   servo 1 pos 0
  *   servo 1 pos 180
@@ -31,8 +33,8 @@ extern "C" {
 #include <ESP8266HTTPUpdateServer.h>
 #include <Servo.h>
 
-#include "wifi-settings/home.h"
-// #include "wifi-settings/tethering-jw.h"
+// #include "wifi-settings/home.h"
+#include "wifi-settings/tethering-jw.h"
 // #include "wifi-settings/fablabnbg.h"
 // #include "wifi-settings/franken-freifunk.h"
 
@@ -50,7 +52,7 @@ extern "C" {
 #endif
 #ifndef SERVO_GPIOS
 // # define SERVO_GPIOS 2, 13, 4, 5
-# define SERVO_GPIOS 2
+# define SERVO_GPIOS 2,5
 #endif
 #ifndef SERVO_SPEED
 # define SERVO_SPEED 250
