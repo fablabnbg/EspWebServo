@@ -8,6 +8,18 @@ The access-point's own SSID is configured via AP_DEFAULT_SSID (default 'jw-ESP-A
 
 The serial console, if connected prints debug output.
 
+## Hardware & circuit
+
+The following components were used
+
+* ESP-12E Module from AI-Thinker http://de.aliexpress.com/item/Esp8266-WiFi-series-of-model-ESP-12-ESP-12F-esp12F-esp12-authenticity-guaranteed/32468324806.html
+* Standard Servo Modelcraft MC410 from conrad.de
+* Step down voltage regulator from http://de.aliexpress.com/item/Free-Shipping-5PCS-Ultra-small-power-supply-module-DC-DC-BUCK-3A-adjustable-buck-module-regulator/1727878724.html
+* 4x Resistor 2K2 1/8W
+
+
+
+## Network access
 When the station connects to an existing network, it tries to reach the time server configured as NTP_SERVER_NAME (default 'time.nist.gov'). After a first success, the device has a real-time clock, and prints the time every 5 seconds on the debug output.
 
 The servo can be moved by accessing e.g.
