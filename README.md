@@ -10,13 +10,27 @@ The serial console, if connected prints debug output.
 
 ## Hardware & circuit
 
-The following components were used
+The following components were used:
 
 * ESP-12E Module from AI-Thinker http://de.aliexpress.com/item/Esp8266-WiFi-series-of-model-ESP-12-ESP-12F-esp12F-esp12-authenticity-guaranteed/32468324806.html
 * Standard Servo Modelcraft MC410 from conrad.de
 * Step down voltage regulator from http://de.aliexpress.com/item/Free-Shipping-5PCS-Ultra-small-power-supply-module-DC-DC-BUCK-3A-adjustable-buck-module-regulator/1727878724.html
 * 4x Resistor 2K2 1/8W
+* 2S LiPo 7.4V 1.15 Ah from conrad.de
+* 2 Jumper wires Male/Female
+* Connector female 4pin.
 
+
+Lipo Modifications:
+
+* The big connector on the lipo (4mm pitch, male(!)) was replaced with a 4pin female pitch 2.5mm
+so that we can charge the cells using a balancer and supply 7.4 V  to the servo.
+
+Servo modifications: 
+
+* The standard 3pin female servo connector was replaced with the two male ends of the jumper wires, to connect to the servo.
+* The housing was prepared to mount the ESP-12 Module using a milling machine. Diameter of the holes is 0.6mm, pitch is 2mm and 14mm across. The back side was leveled down by 0.7mm for a perfect fit of the the Module. Not really necessary.
+See drawing and Photos.
 
 
 ## Network access
