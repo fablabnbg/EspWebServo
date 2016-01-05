@@ -1,6 +1,8 @@
 # EspWebServo
 An rc-servo controlled by an ESP8266 via wifi commands.
 
+<a href="https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos"><img src="https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20160105_153520.jpg" /></a>
+
 The ESP is both access point and wifi-station. The station can be configured to join an existing SSID by selecting one of the header files in the wifi-settings folder. Not all header files listed in EspWebServo.ino are found in wifi-settings to protect some real-life credentials. Take the existing ones to model your own header file.
 
 The access-point is always active to reach the device, and to reconfigure the network for the station interface.
