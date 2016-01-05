@@ -30,10 +30,7 @@ These components are used to build the programmer hardware:
   Between ESP-clamp and GND there is 2x 2k2 ohm in series.
 * The clamp is constructed from 2mm acrylic sheets lasercut,
   fixed with zip-ties and hot glue.
-* The pins TxD and RxD on the ESP-12E module are swapped.
-  Normally one would connect TxD from USB with RxD of the ESP and
-  TxD from the ESP with RxD on the USB. Here we connect TxD with TxD
-  and RxD with RxD.
+
 
 ### Modifications
 
@@ -64,6 +61,10 @@ pullup to 3.3V, GPIO15 must be connected to GND. The reset (RES) and enable (EN)
 pullup for stable operation. 
 
 An external upload circuit is built to snap on the left and right row of 8 pins of the module.
+
+Note: The current model of the clamp has rather weak contacts.
+TxD -> RxD, RxD -> TxD is correct, although there are comments in the forums stating the opposite.
+If the serial line upload does not work reliably, soldering direct wires for GND, RxD, TxD is recommended.
 
 ### Power up
 With these 4 pullups an one GND connection, the module starts. A brief bliiink-blink 

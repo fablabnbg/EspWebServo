@@ -33,10 +33,13 @@ extern "C" {
 #include <ESP8266HTTPUpdateServer.h>
 #include <Servo.h>
 
-// #include "wifi-settings/home.h"
-#include "wifi-settings/tethering-jw.h"
-// #include "wifi-settings/fablabnbg.h"
-// #include "wifi-settings/franken-freifunk.h"
+struct wifi_cred {
+  char *ssid;
+  char *pass;
+} wifi_creds_list[] = {
+#include "wifi-settings/list-of-all.h"
+  { NULL, NULL }
+};
 
 #ifndef AP_DEFAULT_SSID
 # define AP_DEFAULT_SSID "jw-ESP-ADC"
@@ -52,7 +55,7 @@ extern "C" {
 #endif
 #ifndef SERVO_GPIOS
 // # define SERVO_GPIOS 2, 13, 4, 5
-# define SERVO_GPIOS 2,5
+# define SERVO_GPIOS 5,2
 #endif
 #ifndef SERVO_SPEED
 # define SERVO_SPEED 250
@@ -64,8 +67,8 @@ extern "C" {
 #define MAX_SERVO_ID 4
 
 const char* host = "esp8266-webupdate";
-const char* ssid = STA_DEFAULT_SSID;
-const char* password = STA_DEFAULT_PASSWORD;
+const char* ssid = NULL;     //  = STA_DEFAULT_SSID;
+const char* password = NULL; //  = STA_DEFAULT_PASSWORD;
 
 String ap_ssid = AP_DEFAULT_SSID;
 WiFiServer roboServer(ROBO_PORT);      // RoboRemoFree Android app connects here
@@ -91,20 +94,33 @@ void setup(void){
   Serial.print("\nFlash: ");
   Serial.println(flashSizeStr());
   Serial.println("Build Date: " __DATE__ " " __TIME__);
-  WiFi.mode(WIFI_AP_STA);
-  WiFi.begin(ssid, password);
 
-  while(WiFi.waitForConnectResult() != WL_CONNECTED){
-    WiFi.begin(ssid, password);
-    Serial.println("WiFi failed, retrying.");
-  }
 
   uint8_t mac[6];
   char macstr3[10];
   wifi_get_macaddr(SOFTAP_IF, mac);
   sprintf(macstr3, "-%02X%02X%02X", mac[3], mac[4], mac[5]);
   ap_ssid += String(macstr3);
-  WiFi.softAP(ap_ssid.c_str());
+  
+  WiFi.mode(WIFI_AP_STA);
+  WiFi.softAP(ap_ssid.c_str());   // did not work after begin. try before...
+
+  struct wifi_cred *w = &wifi_creds_list[0];
+
+  while (!ssid && w->ssid != NULL) {  
+    for (int i = 0; i < 5; i++) {
+      WiFi.begin(w->ssid, w->pass);
+      Serial.printf("%d/5: trying wifi %s ...\n", i, w->ssid);
+      delay(1000);
+      if (WiFi.waitForConnectResult() == WL_CONNECTED) {
+        ssid = w->ssid;
+        password = w->pass;
+        break;
+      }
+    }
+    w++;
+  }
+  // WiFi.softAP(ap_ssid.c_str());
   
   start_sntp();
   
