@@ -1,7 +1,7 @@
 # EspWebServo
 An rc-servo controlled by an ESP8266 via wifi commands.
 
-[![Servo and LiPo](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20160105_153520.jpg)](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos)
+[![Servo and LiPo](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20160105_153520.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
 
 
 The ESP is both access point and wifi-station. The station can be configured to join an existing SSID by selecting one of the header files in the wifi-settings folder. Not all header files listed in EspWebServo.ino are found in wifi-settings to protect some real-life credentials. Take the existing ones to model your own header file.
@@ -106,8 +106,7 @@ Port 9876 (on both IP-Addresses, access-point and station) is also active with a
  *   servo 1 speed 255
  *   servo 1 speed 0
 
-[![RoboRemo Screenshot](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20151228_183452.jpg)](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos)
-
+[![RoboRemo Screenshot](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20151228_183452.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
 
 
 Happy hacking!
