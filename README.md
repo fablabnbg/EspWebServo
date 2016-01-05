@@ -33,8 +33,8 @@ These components are used to build the programmer hardware:
 * The clamp is constructed from 2mm acrylic sheets lasercut,
   fixed with zip-ties and hot glue. It basically works, but is difficult to put in place.
 
+[![Clamp mounted](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20151230_134840.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
 [![Clamp wired](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20160102_175640.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
-[![Clamp mounted](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20160102_175640.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
 
 
 ### Modifications
@@ -49,13 +49,13 @@ Servo:
 * The housing was prepared to mount the ESP-12 Module using a milling machine. Diameter of the holes is 0.6mm, pitch is 2mm and 14mm across. The back side was leveled down by 0.7mm for a perfect fit of the the Module. Not really necessary.  See drawing and photos.
 * The step down converter is inside the servo, we clear a gap 4mm wide, 15mm long between motor and potentiometer to accomodate the converter. The converter is too big to fit.
 
-[![converter in servo](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20160102_132815.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
-
+[![converter in servo](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20160105_202325.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
 [![Servo back side](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20151230_140011.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
+[![converter in servo](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20160102_132815.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
 
 
 Step down converter:
-* The input and output capacitors are removed. 
+* The input and output capacitors are removed.
 * The PCB is cut back on both input and output side by ca 1.5mm each. We cut right though the holes.
 * input and outcapacitors are soldered back in place so that they do not extend beoynd the PCB.
 * The converter needs to be adjusted before soldering. Apply 7.4V input, connect a voltmeter to the output
