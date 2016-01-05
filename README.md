@@ -1,7 +1,7 @@
 # EspWebServo
 An rc-servo controlled by an ESP8266 via wifi commands.
 
-[![Servo and LiPo](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20160105_153520.jpg)](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos)
+[![Servo and LiPo](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20160105_153520.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
 
 
 The ESP is both access point and wifi-station. The station can be configured to join an existing SSID by selecting one of the header files in the wifi-settings folder. Not all header files listed in EspWebServo.ino are found in wifi-settings to protect some real-life credentials. Take the existing ones to model your own header file.
@@ -29,17 +29,19 @@ These components are used to build the programmer hardware:
 * 4pin connector male+female to temrinate the uart connector.
 * 2 smapp PCB pushbuttons for RESET (right) and GPIO0 (left)
 * 3x resistor 2k2 1/8W used as voltage divider on the TxD.
-  Between USB dongle and ESP-clamp there is 2k2 ohm.
-  Between ESP-clamp and GND there is 2x 2k2 ohm in series.
+  This is optional, measure your TxD idle level, if it is in the range 3.2 .. 3.5V you can use a direct connection. Else, or if unsure use a voltage divider like this: Between USB dongle and ESP-clamp there is 2k2 ohm. Between ESP-clamp and GND there is 2x 2k2 ohm in series. ESP modules are *not* 5V tolerant!
 * The clamp is constructed from 2mm acrylic sheets lasercut,
-  fixed with zip-ties and hot glue.
+  fixed with zip-ties and hot glue. It basically works, but is difficult to put in place.
+
+[![Clamp mounted](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20151230_134840.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
+[![Clamp wired](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20160102_175640.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
 
 
 ### Modifications
 
 Lipo:
 
-* The big connector on the lipo (4pin, 4mm pitch, male(!)) was replaced with a 4pin female pitch 2.5mm.
+* My lipo came with a big connector (4pin, 4mm pitch, male(!)) - This was replaced with a 4pin female pitch 2.5mm.
 
 Servo: 
 
@@ -47,8 +49,13 @@ Servo:
 * The housing was prepared to mount the ESP-12 Module using a milling machine. Diameter of the holes is 0.6mm, pitch is 2mm and 14mm across. The back side was leveled down by 0.7mm for a perfect fit of the the Module. Not really necessary.  See drawing and photos.
 * The step down converter is inside the servo, we clear a gap 4mm wide, 15mm long between motor and potentiometer to accomodate the converter. The converter is too big to fit.
 
+[![converter in servo](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20160105_202325.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
+[![Servo back side](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20151230_140011.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
+[![converter in servo](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20160102_132815.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
+
+
 Step down converter:
-* The input and output capacitors are removed. 
+* The input and output capacitors are removed.
 * The PCB is cut back on both input and output side by ca 1.5mm each. We cut right though the holes.
 * input and outcapacitors are soldered back in place so that they do not extend beoynd the PCB.
 * The converter needs to be adjusted before soldering. Apply 7.4V input, connect a voltmeter to the output
@@ -62,6 +69,9 @@ power from the step down converter. The converter is The ESP-12E module needs
 specific external components before it works normally. GPIO0, GPIO2 need a
 pullup to 3.3V, GPIO15 must be connected to GND. The reset (RES) and enable (EN) pins should also have a 
 pullup for stable operation. 
+
+[![Resistors underneath the ESP-module](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20160102_132720.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
+
 
 An external upload circuit is built to snap on the left and right row of 8 pins of the module.
 
@@ -84,19 +94,11 @@ CAUTION: Sometimes it takes several minutes to connect to a network. This only h
 
 CAUTION: The accesspoint mode alone does not work reliably. The servo only initializes after the device succeeds in connecting to a network. The blue led of the ESP module lights up, when the servo is powered.
 
-
 The servo can be moved by accessing e.g.
 
 * http://192.168.4.1/servo?id=1&pos=0
 * http://192.168.4.1/servo?id=1&pos=90
 * http://192.168.4.1/servo?id=1&pos=180
-
-A simple TCP protocol for use with e.g. RoboRemo is also supported:
-
- *   servo 1 pos 0
- *   servo 1 pos 180
- *   servo 1 speed 255
- *   servo 1 speed 0
 
 The network for the station can be reconfigured with e.g.
 
@@ -104,5 +106,17 @@ The network for the station can be reconfigured with e.g.
 
 The web interface also has a nice javascript slider to control the servo, and an admin form to control the configuration.
 The web interface is identical on both access-point and station. You can choose any.
+
+## RoboRemo
+
+Port 9876 (on both IP-Addresses, access-point and station) is also active with a simple TCP protocol for use with e.g. RoboRemo:
+
+ *   servo 1 pos 0
+ *   servo 1 pos 180
+ *   servo 1 speed 255
+ *   servo 1 speed 0
+
+[![RoboRemo Screenshot](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20151228_183452.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
+
 
 Happy hacking!
