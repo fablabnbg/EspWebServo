@@ -74,12 +74,13 @@ AI-THINKER_DC27D0. (Without connecting GPIO15 to GND, the lipo only delives
 18 mA, and the module is inactive).
 The led shows an occasional blink blink, while a WLAN client is connected to the access-point.
 
-### firmware install
-The module does not show any activity on TxD. There is no reaction to reset.
-
 
 ## Network access
 When the station connects to an existing network, it tries to reach the time server configured as NTP_SERVER_NAME (default 'time.nist.gov'). After a first success, the device has a real-time clock, and prints the time every 5 seconds on the debug output.
+CAUTION: Sometimes it takes several minutes to connect to a network. This only happens if the diagnostics (through the programmer clamp) is not connected.
+
+CAUTION: The accesspoint mode alone does not work reliably. The servo only initializes after the device succeeds in connecting to a network. The blue led of the ESP module lights up, when the servo is powered.
+
 
 The servo can be moved by accessing e.g.
 
