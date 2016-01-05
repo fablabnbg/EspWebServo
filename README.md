@@ -29,23 +29,30 @@ These components are used to build the programmer hardware:
 * 4pin connector male+female to temrinate the uart connector.
 * 2 smapp PCB pushbuttons for RESET (right) and GPIO0 (left)
 * 3x resistor 2k2 1/8W used as voltage divider on the TxD.
-  Between USB dongle and ESP-clamp there is 2k2 ohm.
-  Between ESP-clamp and GND there is 2x 2k2 ohm in series.
+  This is optional, measure your TxD idle level, if it is in the range 3.2 .. 3.5V you can use a direct connection. Else, or if unsure use a voltage divider like this: Between USB dongle and ESP-clamp there is 2k2 ohm. Between ESP-clamp and GND there is 2x 2k2 ohm in series. ESP modules are *not* 5V tolerant!
 * The clamp is constructed from 2mm acrylic sheets lasercut,
-  fixed with zip-ties and hot glue.
+  fixed with zip-ties and hot glue. It basically works, but is difficult to put in place.
+
+[![Clamp wired](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20160102_175640.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
+[![Clamp mounted](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20160102_175640.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
 
 
 ### Modifications
 
 Lipo:
 
-* The big connector on the lipo (4pin, 4mm pitch, male(!)) was replaced with a 4pin female pitch 2.5mm.
+* My lipo came with a big connector (4pin, 4mm pitch, male(!)) - This was replaced with a 4pin female pitch 2.5mm.
 
 Servo: 
 
 * The standard 3pin female servo connector was replaced with the two male ends of the jumper wires, to connect to the servo.
 * The housing was prepared to mount the ESP-12 Module using a milling machine. Diameter of the holes is 0.6mm, pitch is 2mm and 14mm across. The back side was leveled down by 0.7mm for a perfect fit of the the Module. Not really necessary.  See drawing and photos.
 * The step down converter is inside the servo, we clear a gap 4mm wide, 15mm long between motor and potentiometer to accomodate the converter. The converter is too big to fit.
+
+[![converter in servo](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20160102_132815.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
+
+[![Servo back side](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20151230_140011.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
+
 
 Step down converter:
 * The input and output capacitors are removed. 
@@ -62,6 +69,9 @@ power from the step down converter. The converter is The ESP-12E module needs
 specific external components before it works normally. GPIO0, GPIO2 need a
 pullup to 3.3V, GPIO15 must be connected to GND. The reset (RES) and enable (EN) pins should also have a 
 pullup for stable operation. 
+
+[![Resistors underneath the ESP-module](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20160102_132720.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
+
 
 An external upload circuit is built to snap on the left and right row of 8 pins of the module.
 
