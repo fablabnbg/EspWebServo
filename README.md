@@ -84,19 +84,11 @@ CAUTION: Sometimes it takes several minutes to connect to a network. This only h
 
 CAUTION: The accesspoint mode alone does not work reliably. The servo only initializes after the device succeeds in connecting to a network. The blue led of the ESP module lights up, when the servo is powered.
 
-
 The servo can be moved by accessing e.g.
 
 * http://192.168.4.1/servo?id=1&pos=0
 * http://192.168.4.1/servo?id=1&pos=90
 * http://192.168.4.1/servo?id=1&pos=180
-
-A simple TCP protocol for use with e.g. RoboRemo is also supported:
-
- *   servo 1 pos 0
- *   servo 1 pos 180
- *   servo 1 speed 255
- *   servo 1 speed 0
 
 The network for the station can be reconfigured with e.g.
 
@@ -104,5 +96,18 @@ The network for the station can be reconfigured with e.g.
 
 The web interface also has a nice javascript slider to control the servo, and an admin form to control the configuration.
 The web interface is identical on both access-point and station. You can choose any.
+
+## RoboRemo
+
+Port 9876 (on both IP-Addresses, access-point and station) is also active with a simple TCP protocol for use with e.g. RoboRemo:
+
+ *   servo 1 pos 0
+ *   servo 1 pos 180
+ *   servo 1 speed 255
+ *   servo 1 speed 0
+
+[![RoboRemo Screenshot](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20151228_183452.jpg)](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos)
+
+
 
 Happy hacking!
