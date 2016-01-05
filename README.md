@@ -49,7 +49,7 @@ Servo:
 * The housing was prepared to mount the ESP-12 Module using a milling machine. Diameter of the holes is 0.6mm, pitch is 2mm and 14mm across. The back side was leveled down by 0.7mm for a perfect fit of the the Module. Not really necessary.  See drawing and photos.
 * The step down converter is inside the servo, we clear a gap 4mm wide, 15mm long between motor and potentiometer to accomodate the converter. The converter is too big to fit.
 
-[![converter in servo](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20160105_202325.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
+[![milling plan](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20160105_202325.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
 [![Servo back side](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20151230_140011.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
 [![converter in servo](https://raw.githubusercontent.com/fablabnbg/EspWebServo/master/photos/20160102_132815.jpg)](https://github.com/fablabnbg/EspWebServo/tree/master/photos)
 
