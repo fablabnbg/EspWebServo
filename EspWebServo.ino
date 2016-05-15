@@ -1,7 +1,7 @@
 /*
  * EspWebServo -- a true Internet Of Things device. esp8266 drives one (or more) servo(s) controlled over TCP.
  * 
- * 2015-12-26 (c) juewei@fabfolk.com
+ * 2015-12-26 (c) juewei@fabmail.org
  * Distribute under GPL-2.0 or ask.
  * 
  * FIXME: the upload code does not yet work as advertised:
@@ -201,7 +201,7 @@ void handleRoot() {
     <p><a href=\"/stats\">Statistics</a> (<a href=\"/stats.json\">json</a>)</p>\
     <p><a href=\"/admin\">Network Administration</a>\
     <p><br/>Follow us on <a href=\"http://github.com/fablabnbg/EspWebServo\">github</a>!\
-    <p><small>(C) 2015 Jürgen Weigert &lt;<a href=\"mailto:juewei@fabfolk.com\">juewei@fabfolk.com</a>&gt;</small>\
+    <p><small>(C) 2015 Jürgen Weigert &lt;<a href=\"mailto:juewei@fabmail.org\">juewei@fabmail.org</a>&gt;</small>\
   </body>\
 </html>");
 }
